@@ -1,0 +1,84 @@
+[project]
+package-mode = false
+name = "NoteFlow"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Xybyyn",email = "semenov-ns@zvuk.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy (>=2.0.45,<3.0.0)",
+    "fastapi (>=0.124.2,<0.125.0)",
+    "asyncpg (>=0.31.0,<0.32.0)",
+    "alembic (>=1.17.2,<2.0.0)",
+    "pydantic (>=2.12.5,<3.0.0)",
+    "pydantic-settings (>=2.12.0,<3.0.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "ruff (>=0.14.9,<0.15.0)",
+    "mypy (>=1.19.0,<2.0.0)",
+    "uvicorn (>=0.38.0,<0.39.0)"
+]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+strict=true
+show_error_codes = true
+local_partial_types = true
+strict_bytes = true
+warn_unreachable = true
+
+enable_error_code = [
+  "ignore-without-code",
+  "truthy-bool",
+  "truthy-iterable",
+  "possibly-undefined",
+  "redundant-expr",
+  "unused-ignore",
+  "deprecated",
+  "exhaustive-match",
+  "explicit-any",
+  "type-arg",
+]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90", "I", "N", "UP", "YTT",
+    "ASYNC", "S", "B", "C4", "DTZ", "T10", "FA", "ISC",
+    "ICN", "PIE", "T20", "PT", "Q", "RET", "SLF", "SIM",
+    "ERA", "PLE", "TRY", "PYI", "PERF", "LOG", "RUF008",
+    "RUF009", "RUF012", "RUF013", "RUF015", "RUF019", "RUF100", "RUF200"
+]
+unfixable = [
+    "ERA",
+]
+ignore = [
+    "TRY003",
+    "ISC001",
+    "PERF203",
+    "I001",
+    "UP035"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B008", "C4", "ISC", "SLF", "ERA001"]
+"src/*" = ["PT", "TRY400", "ERA001"]
+"src/dependencies.py" = ["B008"]
+"src/routes.py" = ["B008"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
