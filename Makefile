@@ -36,3 +36,15 @@ ps_docker:
 
 restart_docker:
 	docker compose restart ${PROJECT}
+
+revision_docker:
+	docker compose -p ${PROJECT} run --rm --no-deps app \
+		alembic revision --autogenerate -m "$(MESSAGE)"
+
+migrate_docker:
+	docker compose -p ${PROJECT} run --rm app \
+		alembic upgrade head
+
+downgrade_docker:
+	docker compose -p ${PROJECT} run --rm app \
+		alembic downgrade -1
