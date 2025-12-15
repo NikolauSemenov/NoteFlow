@@ -10,7 +10,10 @@ class GetAllNotes:
 
     async def __call__(self) -> list[NotesRow]:
         async with self._notes_repo() as notes_repo:
-            return await notes_repo.get_notes_is_active()
+            notes = await notes_repo.get_notes_is_active()
+            if not notes:
+                raise HTTPException(status_code=404, detail="Notes not found")
+            return notes
 
 
 class GetNote:
