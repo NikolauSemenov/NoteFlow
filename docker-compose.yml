@@ -1,10 +1,24 @@
 services:
+  app:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@postgresql:5432/note-flow
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
   postgresql:
     environment:
       - POSTGRES_DB=note-flow
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-    image: postgres:15-alpine
+    image: postgres:17-bookworm
     ports:
       - "14104:5432"
     volumes:

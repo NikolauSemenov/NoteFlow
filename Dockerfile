@@ -1,21 +1,18 @@
-FROM python:3.12-bookworm
+FROM python:3.12.6-bookworm
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ARG POETRY_VERSION=2.2.1
 
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libpq-dev \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+RUN pip install --upgrade pip wheel "poetry==${POETRY_VERSION}"
+RUN poetry config virtualenvs.create false
 
-COPY poetry.lock pyproject.toml ./
-RUN pip install --upgrade pip && \
-    pip install poetry==1.8.3 && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-root --only main
+COPY pyproject.toml poetry.lock ./
+
+RUN poetry install --no-root
 
 COPY src .
 
-EXPOSE 8080
-
-CMD ["python", "/app/main.py"]
+CMD ["uvicorn", "src.app:main", "--host", "0.0.0.0", "--port", "8000"]

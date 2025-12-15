@@ -1,4 +1,5 @@
 SERVICE_DIR := src
+PROJECT := notes-flow
 
 setup:
 	@poetry install --sync
@@ -18,5 +19,20 @@ migration:
 migrate:
 	@poetry run alembic upgrade head
 
+build_docker:
+	docker compose -p ${PROJECT} build
+
 start_docker:
-	docker compose up -d
+	docker compose -p ${PROJECT} up -d
+
+stop_docker:
+	docker compose -p ${PROJECT} down
+
+logging_docker:
+	docker compose -p ${PROJECT} logs -f --tail=50 app
+
+ps_docker:
+	docker compose -p ${PROJECT} ps
+
+restart_docker:
+	docker compose restart ${PROJECT}

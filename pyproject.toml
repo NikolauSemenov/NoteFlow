@@ -4,7 +4,7 @@ name = "NoteFlow"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Xybyyn",email = "semenov-ns@zvuk.com"}
+    {name = "nikolausemenov",email = "semenov-ns@zvuk.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
