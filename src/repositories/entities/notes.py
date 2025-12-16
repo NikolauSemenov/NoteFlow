@@ -20,7 +20,6 @@ class GetNote(QueryMixIn):
 
 
 class TakeDownNote(QueryMixIn):
-
     QUERY = update(Notes).where(Notes.id == bindparam("note_id")).values(is_active=False).returning(Notes.id)
 
     async def __call__(self, note_id: int) -> NoteIdRow | None:

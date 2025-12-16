@@ -6,8 +6,12 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSessio
 
 from src.services.update_notes import TakeDownActiveNote
 from src.config.settings import settings
-from src.repositories.repository import AcquireNotesRepository, NotesReaderRepository, MutatorNotesRepository, \
-    NotesWriterRepository
+from src.repositories.repository import (
+    AcquireNotesRepository,
+    NotesReaderRepository,
+    MutatorNotesRepository,
+    NotesWriterRepository,
+)
 from src.services.get_notes import GetAllNotes, GetNote
 
 
@@ -51,5 +55,5 @@ async def get_note_by_id(
 
 async def update_note_active(
     notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
-) -> None:
+) -> TakeDownActiveNote:
     return TakeDownActiveNote(notes_repository)

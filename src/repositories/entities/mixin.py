@@ -9,7 +9,6 @@ ScalarType = TypeVar("ScalarType")
 
 
 class QueryMixIn:
-
     def __init__(self, session: AsyncSession):
         self.session = session
 

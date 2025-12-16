@@ -24,7 +24,8 @@ async def get_note(
 
 
 @router.put("/note/active", tags=["Notes"], response_model=NoteIdRow)
-async def update_note_active(
-        note_id: Annotated[Annotated[int, Field(gt=0, le=2_147_483_647)], Query(..., alias="id")],
-        service: Annotated[TakeDownActiveNote, Depends(update_note_active)]) -> NoteIdRow | None:
+async def update_note(
+    note_id: Annotated[Annotated[int, Field(gt=0, le=2_147_483_647)], Query(..., alias="id")],
+    service: Annotated[TakeDownActiveNote, Depends(update_note_active)],
+) -> NoteIdRow | None:
     return await service(note_id)

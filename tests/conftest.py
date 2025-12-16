@@ -49,7 +49,7 @@ def create_db(pg_url):
 
 @pytest.fixture(scope="session")
 async def get_async_engine(create_db, pg_url: URL) -> AsyncIterator[AsyncEngine]:
-    engine = create_async_engine(pg_url, isolation_level='AUTOCOMMIT')
+    engine = create_async_engine(pg_url, isolation_level="AUTOCOMMIT")
     yield engine
     await engine.dispose()
 
