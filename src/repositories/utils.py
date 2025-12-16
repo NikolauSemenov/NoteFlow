@@ -1,13 +1,21 @@
 import abc
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from typing import TypeVar, AsyncIterator, Callable, AsyncContextManager
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 T = TypeVar("T", covariant=True)
 
+_session_cv: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]] = ContextVar(
+    "_session_cv",
+    default={}
+)
+
 
 class SqlAlchemyAcquire[T](abc.ABC):
+    SESSION_STORAGE: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]]
+
     def __init__(
         self,
         session_factory: async_sessionmaker[AsyncSession],
@@ -22,11 +30,25 @@ class SqlAlchemyAcquire[T](abc.ABC):
 
     @asynccontextmanager
     async def __call__(self) -> AsyncIterator[T]:
-        async with self._get_session() as session:
+        storage = self.SESSION_STORAGE.get()
+
+        if session := storage.get(self._session_factory):
             yield self._repo_factory(session)
+            return
+
+        async with self._get_session() as session:
+            token = self.SESSION_STORAGE.set(
+                {**storage, self._session_factory: session}
+            )
+            try:
+                yield self._repo_factory(session)
+            finally:
+                self.SESSION_STORAGE.reset(token)
 
 
 class AcquireTxRepository(SqlAlchemyAcquire[T]):
+    SESSION_STORAGE = _session_cv
+
     @asynccontextmanager
     async def _get_session(self) -> AsyncIterator[AsyncSession]:
         async with self._session_factory.begin() as session:
@@ -34,6 +56,8 @@ class AcquireTxRepository(SqlAlchemyAcquire[T]):
 
 
 class AcquireRepository(SqlAlchemyAcquire[T]):
+    SESSION_STORAGE = _session_cv
+
     @asynccontextmanager
     async def _get_session(self) -> AsyncIterator[AsyncSession]:
         async with self._session_factory() as session:

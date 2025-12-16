@@ -31,35 +31,41 @@ def get_session(engine: Annotated[AsyncEngine, Depends(get_engine)]) -> async_se
     )
 
 
-async def get_notes_repository(
+@lru_cache
+def get_notes_repository(
     session: Annotated[async_sessionmaker[AsyncSession], Depends(get_session)],
 ) -> AcquireNotesRepository:
     return AcquireNotesRepository(session, NotesReaderRepository)
 
 
-async def mutator_notes_repository(
+@lru_cache
+def mutator_notes_repository(
     session: Annotated[async_sessionmaker[AsyncSession], Depends(get_session)],
 ) -> MutatorNotesRepository:
     return MutatorNotesRepository(session, NotesWriterRepository)
 
 
-async def get_notes(notes_repository: Annotated[AcquireNotesRepository, Depends(get_notes_repository)]) -> GetAllNotes:
+@lru_cache
+def get_notes(notes_repository: Annotated[AcquireNotesRepository, Depends(get_notes_repository)]) -> GetAllNotes:
     return GetAllNotes(notes_repository)
 
 
-async def get_note_by_id(
+@lru_cache
+def get_note_by_id(
     notes_repository: Annotated[AcquireNotesRepository, Depends(get_notes_repository)],
 ) -> GetNote | None:
     return GetNote(notes_repository)
 
 
-async def update_note_active(
+@lru_cache
+def update_note_active(
     notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
 ) -> TakeDownActiveNote:
     return TakeDownActiveNote(notes_repository)
 
 
-async def create_note(
+@lru_cache
+def create_note(
     notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
 ) -> CreateNote:
     return CreateNote(notes_repository)
