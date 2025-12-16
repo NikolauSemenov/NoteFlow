@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -19,8 +19,9 @@ class Settings(BaseSettings):
     def api_prefix(self) -> str:
         return f"/{self.project_name}/api/{self.project_version}"
 
-    class Config:
-        env_file = BASE_DIR / ".env"
+    model_config = SettingsConfigDict(
+        env_file=BASE_DIR / ".env",
+    )
 
 
 settings = Settings()

@@ -18,4 +18,4 @@ COPY alembic.ini /app/
 COPY migrations /app/migrations
 
 
-CMD ["uvicorn", "src.app:main", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.app:create_app", "--host", "0.0.0.0", "--port", "8000"]

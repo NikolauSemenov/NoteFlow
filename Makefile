@@ -2,7 +2,7 @@ SERVICE_DIR := src
 PROJECT := notes-flow
 
 setup:
-	@poetry install --sync
+	@poetry install --no-root
 
 lint:
 	@printf "${TXT_BOLD}${TXT_MAGENTA}=========================== MYPY ==============================${TXT_RESET}\n"
@@ -11,7 +11,7 @@ lint:
 	@poetry run ruff check --fix --show-fixes --exit-non-zero-on-fix $(SERVICE_DIR)
 
 format:
-	@poetry run ruff format $(SERVICE_DIR)/
+	@poetry run ruff format $(SERVICE_DIR)/ tests/
 
 migration:
 	@poetry run alembic revision --autogenerate
@@ -21,6 +21,9 @@ migrate:
 
 build_docker:
 	docker compose -p ${PROJECT} build
+
+test:
+	@poetry run pytest tests --cov $(SERVICE_DIR) -vv
 
 start_docker:
 	docker compose -p ${PROJECT} up -d

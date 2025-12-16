@@ -5,7 +5,7 @@ from src.config.settings import settings
 from src.api.v1.routes import router
 
 
-def main() -> FastAPI:
+def create_app() -> FastAPI:
     app = FastAPI(
         docs_url=f"{settings.api_prefix}/docs",
         redoc_url=f"{settings.api_prefix}/redoc",
@@ -17,4 +17,4 @@ def main() -> FastAPI:
 
 
 if __name__ == "__main__":
-    uvicorn.run(main, host=settings.host, port=settings.port)
+    uvicorn.run(create_app, host=settings.host, port=settings.port)
