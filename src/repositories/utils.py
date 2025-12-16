@@ -7,10 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 T = TypeVar("T", covariant=True)
 
-_session_cv: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]] = ContextVar(
-    "_session_cv",
-    default={}
-)
+_session_cv: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]] = ContextVar("_session_cv")
 
 
 class SqlAlchemyAcquire[T](abc.ABC):
@@ -30,20 +27,18 @@ class SqlAlchemyAcquire[T](abc.ABC):
 
     @asynccontextmanager
     async def __call__(self) -> AsyncIterator[T]:
-        storage = self.SESSION_STORAGE.get()
+        storage = self.SESSION_STORAGE.get({})
 
-        if session := storage.get(self._session_factory):
+        session = storage.get(self._session_factory)
+        if session is None:
+            async with self._get_session() as session:
+                token = self.SESSION_STORAGE.set({**storage, self._session_factory: session})
+                try:
+                    yield self._repo_factory(session)
+                finally:
+                    self.SESSION_STORAGE.reset(token)
+        else:
             yield self._repo_factory(session)
-            return
-
-        async with self._get_session() as session:
-            token = self.SESSION_STORAGE.set(
-                {**storage, self._session_factory: session}
-            )
-            try:
-                yield self._repo_factory(session)
-            finally:
-                self.SESSION_STORAGE.reset(token)
 
 
 class AcquireTxRepository(SqlAlchemyAcquire[T]):
