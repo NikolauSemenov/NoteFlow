@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from src.repositories.repository import AcquireNotesRepository
-from src.types import NotesRow, NoteRow
+from src.schemas import NotesRow, NoteRow
 
 
 class GetAllNotes:

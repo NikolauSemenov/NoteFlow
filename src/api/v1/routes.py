@@ -1,9 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
+from pydantic import Field
 
-from src.dependencies import get_notes, get_note_by_id
-from src.types import NotesRow, NoteRow
+from src.services.update_notes import TakeDownActiveNote
+from src.dependencies import get_notes, get_note_by_id, update_note_active
+from src.schemas import NotesRow, NoteRow, NoteIdRow
 from src.services.get_notes import GetAllNotes, GetNote
 
 router = APIRouter()
@@ -18,4 +20,11 @@ async def get_all_notes(service: Annotated[GetAllNotes, Depends(get_notes)]) -> 
 async def get_note(
     service: Annotated[GetNote, Depends(get_note_by_id)], note_id: int = Path(..., ge=1, le=2147483647)
 ) -> NoteRow:
+    return await service(note_id)
+
+
+@router.put("/note/active", tags=["Notes"], response_model=NoteIdRow)
+async def update_note_active(
+        note_id: Annotated[Annotated[int, Field(gt=0, le=2_147_483_647)], Query(..., alias="id")],
+        service: Annotated[TakeDownActiveNote, Depends(update_note_active)]) -> NoteIdRow | None:
     return await service(note_id)

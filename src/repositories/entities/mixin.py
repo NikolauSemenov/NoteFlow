@@ -8,8 +8,10 @@ RowType = TypeVar("RowType", bound=BaseModel)
 ScalarType = TypeVar("ScalarType")
 
 
-class SelectableMixIn:
-    session: AsyncSession
+class QueryMixIn:
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
     async def execute(self, query: Executable, **params: Any) -> Result[Any]:
         return await self.session.execute(query, params)
@@ -21,4 +23,10 @@ class SelectableMixIn:
     async def one_row_result(self, query: Executable, schema: type[RowType], **params: Any) -> RowType | None:
         if result := await self.session.scalar(query, params):
             return schema.model_validate(result, from_attributes=True)
+        return None
+
+    async def first_row_result(self, query: Executable, schema: type[RowType], **params: Any) -> RowType | None:
+        result = await self.session.execute(query, params)
+        if row := result.fetchone():
+            return schema.model_validate(row, from_attributes=True)
         return None
