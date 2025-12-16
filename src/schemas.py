@@ -13,3 +13,8 @@ class NotesRow(BaseModel):
 
 class NoteRow(NotesRow):
     is_active: bool
+
+
+class CreateNoteBody(BaseModel):
+    title: str
+    content: str

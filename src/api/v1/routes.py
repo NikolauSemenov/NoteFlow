@@ -2,10 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import Field
+from starlette import status
 
-from src.services.update_notes import TakeDownActiveNote
-from src.dependencies import get_notes, get_note_by_id, update_note_active
-from src.schemas import NotesRow, NoteRow, NoteIdRow
+from src.services.update_notes import TakeDownActiveNote, CreateNote
+from src.dependencies import get_notes, get_note_by_id, update_note_active, create_note
+from src.schemas import NotesRow, NoteRow, NoteIdRow, CreateNoteBody
 from src.services.get_notes import GetAllNotes, GetNote
 
 router = APIRouter()
@@ -29,3 +30,11 @@ async def update_note(
     service: Annotated[TakeDownActiveNote, Depends(update_note_active)],
 ) -> NoteIdRow | None:
     return await service(note_id)
+
+
+@router.post("/note", tags=["Notes"], status_code=status.HTTP_201_CREATED)
+async def create_note_data(
+    body: CreateNoteBody,
+    service: Annotated[CreateNote, Depends(create_note)],
+) -> NoteIdRow | None:
+    return await service(body)

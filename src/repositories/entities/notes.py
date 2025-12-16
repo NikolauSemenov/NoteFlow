@@ -1,4 +1,4 @@
-from sqlalchemy import select, bindparam, update
+from sqlalchemy import select, bindparam, update, insert
 
 from src.repositories.entities.mixin import QueryMixIn
 from src.repositories.tables import Notes
@@ -24,3 +24,10 @@ class TakeDownNote(QueryMixIn):
 
     async def __call__(self, note_id: int) -> NoteIdRow | None:
         return await self.first_row_result(self.QUERY, NoteIdRow, note_id=note_id)
+
+
+class CreateNote(QueryMixIn):
+    QUERY = insert(Notes).values(title=bindparam("title"), content=bindparam("content")).returning(Notes.id)
+
+    async def __call__(self, title: str, content: str) -> NoteIdRow | None:
+        return await self.first_row_result(self.QUERY, NoteIdRow, title=title, content=content)

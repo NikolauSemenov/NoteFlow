@@ -33,3 +33,12 @@ async def test_update_active_note(test_client: AsyncClient, create_note):
 async def test_update_active_note_not_found(test_client: AsyncClient):
     response = await test_client.put("/note-flow/api/v1/note/active", params={"id": 1})
     assert response.status_code == 404
+
+
+async def test_create_note(test_client: AsyncClient):
+    response = await test_client.post(
+        "/note-flow/api/v1/note",
+        json={"title": "test title", "content": "test content"},
+    )
+    assert response.status_code == 201
+    assert response.json() == {"id": 1}

@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession, async_sessionmaker
 
-from src.services.update_notes import TakeDownActiveNote
+from src.services.update_notes import TakeDownActiveNote, CreateNote
 from src.config.settings import settings
 from src.repositories.repository import (
     AcquireNotesRepository,
@@ -57,3 +57,9 @@ async def update_note_active(
     notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
 ) -> TakeDownActiveNote:
     return TakeDownActiveNote(notes_repository)
+
+
+async def create_note(
+    notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
+) -> CreateNote:
+    return CreateNote(notes_repository)

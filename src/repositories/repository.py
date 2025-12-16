@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.entities.notes import GetNotesAllIsActive, GetNote, TakeDownNote
+from src.repositories.entities.notes import GetNotesAllIsActive, GetNote, TakeDownNote, CreateNote
 from src.repositories.utils import AcquireRepository, AcquireTxRepository
 
 
@@ -13,6 +13,7 @@ class NotesReaderRepository:
 class NotesWriterRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.takedown_note = TakeDownNote(session)
+        self.create_note = CreateNote(session)
 
 
 AcquireNotesRepository = AcquireRepository[NotesReaderRepository]
