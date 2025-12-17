@@ -5,7 +5,7 @@ from fastapi import Request
 import redis.asyncio as redis
 from fastapi.params import Depends
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from src.schemas import NoteResultRow
 from src.cache_entities.notes import RedisCacheRepository
@@ -20,25 +20,16 @@ from src.repositories.repository import (
 from src.services.get_notes import GetAllNotes, GetNote
 
 
-@lru_cache
-def get_engine() -> AsyncEngine:
-    return create_async_engine(str(settings.postgres_dsn))
+def get_engine(request: Request) -> AsyncEngine:
+    return cast(AsyncEngine, request.app.state.resources.engine)
 
 
-@lru_cache
-def get_session(engine: Annotated[AsyncEngine, Depends(get_engine)]) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(
-        engine,
-        expire_on_commit=False,
-        class_=AsyncSession,
-        autoflush=False,
-        autocommit=False,
-    )
+def get_session(request: Request) -> async_sessionmaker[AsyncSession]:
+    return cast(async_sessionmaker[AsyncSession], request.app.state.resources.async_session_maker)
 
 
-@lru_cache
 def get_redis(request: Request) -> redis.Redis:
-    return cast(redis.Redis, request.app.state.redis)
+    return cast(redis.Redis, request.app.state.resources.redis)
 
 
 @lru_cache
