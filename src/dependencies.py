@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from src.schemas import NoteResultRow
 from src.cache_entities.notes import RedisCacheRepository
-from src.services.update_notes import TakeDownActiveNote, CreateNote
+from src.services.mutation_notes import TakeDownActiveNote, CreateNote
 from src.config.settings import settings
 from src.repositories.repository import (
     AcquireNotesRepository,

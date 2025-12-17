@@ -1,13 +1,14 @@
 from typing import AsyncIterator
 
 import pytest
+import redis.asyncio as redis
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import create_engine, make_url, URL
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
 from sqlalchemy_utils import database_exists, drop_database, create_database
 
-from src.dependencies import get_engine, get_session
+from src.dependencies import get_engine, get_session, get_redis
 from src.app import create_app
 from src.config.settings import Settings
 from src.repositories.tables import Base
@@ -20,7 +21,12 @@ def test_settings() -> Settings:
 
 @pytest.fixture(scope="session")
 def pg_url(test_settings: Settings) -> URL:
-    return make_url(str(test_settings.postgres_dsn)).set(database="note-flow-test")
+    return make_url(test_settings.postgres_dsn.unicode_string()).set(database="note-flow-test")
+
+
+@pytest.fixture(scope="session")
+def get_redis_test(test_settings: Settings):
+    return redis.Redis.from_url(f"{test_settings.redis_dsn.unicode_string()}/3")
 
 
 @pytest.fixture(scope="session")
@@ -28,10 +34,12 @@ def test_app(
     test_settings: Settings,
     get_async_engine: AsyncEngine,
     session_maker: async_sessionmaker[AsyncSession],
+    get_redis_test: redis.Redis,
 ) -> FastAPI:
     app = create_app()
     app.dependency_overrides[get_engine] = lambda: get_async_engine
     app.dependency_overrides[get_session] = lambda: session_maker
+    app.dependency_overrides[get_redis] = lambda: get_redis_test
     return app
 
 
@@ -71,11 +79,12 @@ async def db_session(session_maker: async_sessionmaker[AsyncSession]) -> AsyncIt
 
 
 @pytest.fixture(autouse=True)
-async def rollback_db(get_async_engine):
+async def rollback_db(get_async_engine, get_redis_test):
     yield
     async with get_async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    await get_redis_test.flushdb()
 
 
 @pytest.fixture

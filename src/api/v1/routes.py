@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from pydantic import Field
 from starlette import status
 
-from src.services.update_notes import TakeDownActiveNote, CreateNote
+from src.services.mutation_notes import TakeDownActiveNote, CreateNote
 from src.dependencies import get_notes, get_note_by_id, update_note_active, create_note
 from src.schemas import NotesRow, NoteRow, NoteIdRow, CreateNoteBody
 from src.services.get_notes import GetAllNotes, GetNote
