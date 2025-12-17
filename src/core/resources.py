@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 import redis.asyncio as redis
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
 
 from src.config.settings import settings
@@ -18,7 +19,7 @@ class AppResources:
             settings.redis_dsn.unicode_string(),
             decode_responses=True,
         )
-        if not await self.redis.ping():
+        if not await self.redis.ping():  # type: ignore[misc]
             raise RuntimeError("Redis is not connected")
 
     async def init_pg(self) -> None:
@@ -40,7 +41,7 @@ class AppResources:
             await self.engine.dispose()
 
     @asynccontextmanager
-    async def lifespan(self, _) -> AsyncIterator["AppResources"]:
+    async def lifespan(self, app: FastAPI) -> AsyncIterator[None]:
         await self.init_redis()
         await self.init_pg()
         try:
