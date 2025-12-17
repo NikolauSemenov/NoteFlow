@@ -11,6 +11,14 @@ _session_cv: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]] = 
 
 
 class SqlAlchemyAcquire[T](abc.ABC):
+    """
+    Данная фабрика позволяет переиспользовать AsyncSession в рамках одного клиентского запроса
+
+    async with self._first_repo() as first_repo:
+        async with self._second_repo() as second_repo:
+            ...
+    В этом случае будет использоваться один экземпляр AsyncSession
+    """
     SESSION_STORAGE: ContextVar[dict[async_sessionmaker[AsyncSession], AsyncSession]]
 
     def __init__(

@@ -24,7 +24,7 @@ class AppResources:
 
     async def init_pg(self) -> None:
         self.engine = create_async_engine(
-            str(settings.postgres_dsn),
+            settings.postgres_dsn.unicode_string(),
         )
         self.async_session_maker = async_sessionmaker(
             self.engine,

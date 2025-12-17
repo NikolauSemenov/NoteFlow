@@ -5,7 +5,6 @@ from sqlalchemy import Executable, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 RowType = TypeVar("RowType", bound=BaseModel)
-ScalarType = TypeVar("ScalarType")
 
 
 class QueryMixIn:
