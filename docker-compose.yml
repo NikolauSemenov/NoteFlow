@@ -5,12 +5,15 @@ services:
       - .env
     environment:
       - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@postgresql:5432/note-flow
+      - REDIS_DSN=redis://redis:6379
     volumes:
       - ./src:/app/src
     ports:
       - "8000:8000"
     depends_on:
       postgresql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   postgresql:
@@ -22,9 +25,23 @@ services:
     ports:
       - "14104:5432"
     volumes:
-      - $PWD/pgdata:/var/lib/postgresql/data
+      - $PWD/volumes/pg_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/volumes/rb_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 5

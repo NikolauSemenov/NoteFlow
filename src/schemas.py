@@ -15,6 +15,10 @@ class NoteRow(NotesRow):
     is_active: bool
 
 
+class NoteResultRow(BaseModel):
+    result: list[NotesRow]
+
+
 class CreateNoteBody(BaseModel):
     title: str
     content: str

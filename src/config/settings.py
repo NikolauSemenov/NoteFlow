@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn, RedisDsn
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     project_version: str
 
     postgres_dsn: PostgresDsn
+    redis_dsn: RedisDsn
+    redis_notes_prefix: str = "notes:v-1"
+    redis_notes_ttl: int = 10
 
     @property
     def api_prefix(self) -> str:
