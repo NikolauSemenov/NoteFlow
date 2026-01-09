@@ -1,19 +1,28 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Header
 from pydantic import Field
 from starlette import status
 
-from src.services.mutation_notes import TakeDownActiveNote, CreateNote
-from src.dependencies import get_notes, get_note_by_id, update_note_active, create_note
-from src.schemas import NotesRow, NoteRow, NoteIdRow, CreateNoteBody
-from src.services.get_notes import GetAllNotes, GetNote
+from src.services.likes.aggregation import CreateLike
+from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote
+from src.dependencies import (
+    get_notes,
+    get_note_by_id,
+    update_note_active,
+    create_note,
+    create_like,
+)
+from src.schemas import NotesRow, NoteRow, NoteIdRow, CreateNoteBody, CreateLikeBody, LikesCountRow
+from src.services.notes.get_notes import GetAllNotes, GetNote
 
 router = APIRouter()
 
 
 @router.get("/notes", tags=["Notes"])
-async def get_all_notes(service: Annotated[GetAllNotes, Depends(get_notes)]) -> list[NotesRow]:
+async def get_all_notes(
+    service: Annotated[GetAllNotes, Depends(get_notes)],
+) -> list[NotesRow]:
     return await service()
 
 
@@ -28,13 +37,24 @@ async def get_note(
 async def update_note(
     note_id: Annotated[Annotated[int, Field(gt=0, le=2_147_483_647)], Query(..., alias="id")],
     service: Annotated[TakeDownActiveNote, Depends(update_note_active)],
+    user_id: int = Header(..., alias="X-User-ID"),
 ) -> NoteIdRow | None:
-    return await service(note_id)
+    return await service(note_id, user_id)
 
 
 @router.post("/note", tags=["Notes"], status_code=status.HTTP_201_CREATED)
 async def create_note_data(
     body: CreateNoteBody,
     service: Annotated[CreateNote, Depends(create_note)],
+    user_id: int = Header(..., alias="X-User-ID"),
 ) -> NoteIdRow | None:
-    return await service(body)
+    return await service(body, user_id)
+
+
+@router.post("/note/like", tags=["Likes"], status_code=status.HTTP_201_CREATED)
+async def create_note_like(
+    body: CreateLikeBody,
+    service: Annotated[CreateLike, Depends(create_like)],
+    user_id: int = Header(..., alias="X-User-ID"),
+) -> LikesCountRow | None:
+    return await service(body, user_id)

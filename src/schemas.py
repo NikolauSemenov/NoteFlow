@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class NoteIdRow(BaseModel):
@@ -9,6 +11,19 @@ class NotesRow(BaseModel):
     id: int
     title: str
     content: str
+    created_at: datetime
+    full_name: str = Field(validation_alias="user_full_name")
+    user_id: int
+    likes: int
+
+
+class NotesCache(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: datetime
+    full_name: str
+    user_id: int
 
 
 class NoteRow(NotesRow):
@@ -22,3 +37,16 @@ class NoteResultRow(BaseModel):
 class CreateNoteBody(BaseModel):
     title: str
     content: str
+    full_name: str
+
+
+class CreateLikeBody(BaseModel):
+    note_id: int
+
+
+class LikeIdRow(BaseModel):
+    id: int
+
+
+class LikesCountRow(BaseModel):
+    likes: int

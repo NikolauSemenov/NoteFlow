@@ -15,8 +15,8 @@ class GetAllNotes:
         self._setting = setting
 
     async def __call__(self) -> list[NotesRow]:
-        if result := await self._cache.load(self._setting.redis_notes_prefix, NoteResultRow):
-            return result.result
+        # if result := await self._cache.load(self._setting.redis_notes_prefix, NotesCache):
+        #     return result.result
         async with self._notes_repo() as notes_repo:
             notes = await notes_repo.get_notes_is_active()
             if not notes:

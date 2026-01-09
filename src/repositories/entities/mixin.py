@@ -2,29 +2,24 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import Executable, Result
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncConnection
 
 RowType = TypeVar("RowType", bound=BaseModel)
 
 
 class QueryMixIn:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self, conn: AsyncConnection):
+        self.conn = conn
 
     async def execute(self, query: Executable, **params: Any) -> Result[Any]:
-        return await self.session.execute(query, params)
+        return await self.conn.execute(query, params)
 
     async def many_row_result(self, query: Executable, schema: type[RowType], **params: Any) -> list[RowType]:
-        result = await self.session.execute(query, params)
-        return [schema.model_validate(row, from_attributes=True) for row in result.scalars().all()]
-
-    async def one_row_result(self, query: Executable, schema: type[RowType], **params: Any) -> RowType | None:
-        if result := await self.session.scalar(query, params):
-            return schema.model_validate(result, from_attributes=True)
-        return None
+        result = await self.conn.execute(query, params)
+        return [schema.model_validate(row, from_attributes=True) for row in result.fetchall()]
 
     async def first_row_result(self, query: Executable, schema: type[RowType], **params: Any) -> RowType | None:
-        result = await self.session.execute(query, params)
+        result = await self.conn.execute(query, params)
         if row := result.fetchone():
             return schema.model_validate(row, from_attributes=True)
         return None

@@ -3,7 +3,7 @@ from typing import AsyncIterator
 
 import redis.asyncio as redis
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from src.config.settings import settings
 
@@ -12,7 +12,6 @@ class AppResources:
     def __init__(self) -> None:
         self.redis: redis.Redis | None = None
         self.engine: AsyncEngine | None = None
-        self.async_session_maker: async_sessionmaker[AsyncSession] | None = None
 
     async def init_redis(self) -> None:
         self.redis = redis.Redis.from_url(
@@ -25,13 +24,12 @@ class AppResources:
     async def init_pg(self) -> None:
         self.engine = create_async_engine(
             settings.postgres_dsn.unicode_string(),
-        )
-        self.async_session_maker = async_sessionmaker(
-            self.engine,
-            expire_on_commit=False,
-            class_=AsyncSession,
-            autoflush=False,
-            autocommit=False,
+            echo=False,  # True для логов SQL
+            pool_size=20,  # Максимум соединений в пуле
+            max_overflow=10,  # Дополнительные соединения сверх pool_size
+            pool_timeout=30,  # Время ожидания свободного соединения из пула (сек)
+            pool_recycle=1800,  # Время жизни соединения (сек)
+            pool_pre_ping=True,  # Проверка соединения перед использованием
         )
 
     async def close(self) -> None:

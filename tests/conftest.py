@@ -5,13 +5,13 @@ import redis.asyncio as redis
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import create_engine, make_url, URL
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncConnection
 from sqlalchemy_utils import database_exists, drop_database, create_database
 
-from src.dependencies import get_engine, get_session, get_redis
+from src.repositories.tables import metadata
+from src.dependencies import get_engine, get_redis
 from src.app import create_app
 from src.config.settings import Settings
-from src.repositories.tables import Base
 
 
 @pytest.fixture(scope="session")
@@ -33,12 +33,10 @@ def get_redis_test(test_settings: Settings):
 def test_app(
     test_settings: Settings,
     get_async_engine: AsyncEngine,
-    session_maker: async_sessionmaker[AsyncSession],
     get_redis_test: redis.Redis,
 ) -> FastAPI:
     app = create_app()
     app.dependency_overrides[get_engine] = lambda: get_async_engine
-    app.dependency_overrides[get_session] = lambda: session_maker
     app.dependency_overrides[get_redis] = lambda: get_redis_test
     return app
 
@@ -49,7 +47,7 @@ def create_db(pg_url):
     if database_exists(sync_engine.url):
         drop_database(sync_engine.url)
     create_database(sync_engine.url)
-    Base.metadata.create_all(sync_engine)
+    metadata.create_all(sync_engine)
     yield
     sync_engine.dispose()
     drop_database(sync_engine.url)
@@ -62,28 +60,18 @@ async def get_async_engine(create_db, pg_url: URL) -> AsyncIterator[AsyncEngine]
     await engine.dispose()
 
 
-@pytest.fixture(scope="session")
-def session_maker(get_async_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(
-        bind=get_async_engine,
-        expire_on_commit=False,
-        autoflush=False,
-    )
-
-
 @pytest.fixture
-async def db_session(session_maker: async_sessionmaker[AsyncSession]) -> AsyncIterator[AsyncSession]:
-    async with session_maker() as session:
-        async with session.begin():
-            yield session
+async def db_connection(get_async_engine: AsyncEngine) -> AsyncIterator[AsyncConnection]:
+    async with get_async_engine.begin() as conn:
+        yield conn
 
 
 @pytest.fixture(autouse=True)
 async def rollback_db(get_async_engine, get_redis_test):
     yield
     async with get_async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(metadata.drop_all)
+        await conn.run_sync(metadata.create_all)
     await get_redis_test.flushdb()
 
 

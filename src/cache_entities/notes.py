@@ -21,7 +21,7 @@ class RedisCacheRepository(BaseCache[T]):
         return model.model_validate(data)
 
     async def store(self, key: str, value: T, ttl: int) -> None:
-        await self._redis.set(key, value=json.dumps(value.model_dump()), ex=ttl)
+        await self._redis.set(key, value=json.dumps(value.model_dump_json()), ex=ttl)
 
     async def invalidate(self, key: str) -> None:
         await self._redis.delete(key)

@@ -1,19 +1,21 @@
 import pytest
 from sqlalchemy import insert
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from src.repositories.tables import Notes
+from src.repositories.tables import Note
 
 
 @pytest.fixture
-async def create_note(db_session: AsyncSession):
-    result = await db_session.execute(
-        insert(Notes)
+async def create_note(db_connection: AsyncConnection):
+    result = await db_connection.execute(
+        insert(Note)
         .values(
             title="Test Note",
             content="Test Note content",
+            user_full_name="Ivan Ivanov",
+            user_id=1,
             is_active=True,
         )
-        .returning(Notes.id)
+        .returning(Note.c.id)
     )
     return result.scalar()
