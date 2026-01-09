@@ -50,3 +50,13 @@ class LikeIdRow(BaseModel):
 
 class LikesCountRow(BaseModel):
     likes: int
+
+
+class CommentIdRow(BaseModel):
+    id: int
+
+
+class CreateCommentBody(BaseModel):
+    text: str
+    user_full_name: str
+    note_id: int

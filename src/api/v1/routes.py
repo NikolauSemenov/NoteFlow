@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Path, Query, Header
 from pydantic import Field
 from starlette import status
 
+from src.services.comments.mutation import CreateComment
 from src.services.likes.aggregation import CreateLike
 from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote
 from src.dependencies import (
@@ -12,8 +13,18 @@ from src.dependencies import (
     update_note_active,
     create_note,
     create_like,
+    create_comment,
 )
-from src.schemas import NotesRow, NoteRow, NoteIdRow, CreateNoteBody, CreateLikeBody, LikesCountRow
+from src.schemas import (
+    NotesRow,
+    NoteRow,
+    NoteIdRow,
+    CreateNoteBody,
+    CreateLikeBody,
+    LikesCountRow,
+    CreateCommentBody,
+    CommentIdRow,
+)
 from src.services.notes.get_notes import GetAllNotes, GetNote
 
 router = APIRouter()
@@ -57,4 +68,13 @@ async def create_note_like(
     service: Annotated[CreateLike, Depends(create_like)],
     user_id: int = Header(..., alias="X-User-ID"),
 ) -> LikesCountRow | None:
+    return await service(body, user_id)
+
+
+@router.post("/note/comment", tags=["Comment"], status_code=status.HTTP_201_CREATED)
+async def create_note_comment(
+    body: CreateCommentBody,
+    service: Annotated[CreateComment, Depends(create_comment)],
+    user_id: int = Header(..., alias="X-User-ID"),
+) -> CommentIdRow | None:
     return await service(body, user_id)

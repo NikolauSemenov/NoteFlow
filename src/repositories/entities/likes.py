@@ -24,5 +24,5 @@ class CreateLike(QueryMixIn):
 class GetLikesCount(QueryMixIn):
     QUERY = select(func.count(Like.c.id).label("likes")).where(Like.c.note_id == bindparam("note_id"))
 
-    async def __call__(self, note_id: int) -> LikesCountRow:
+    async def __call__(self, note_id: int) -> LikesCountRow | None:
         return await self.first_row_result(self.QUERY, LikesCountRow, note_id=note_id)

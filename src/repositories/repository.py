@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from src.repositories.entities.comments import CreateComment
 from src.repositories.entities.aggregation import GetNotesAllIsActive, GetNote
 from src.repositories.entities.likes import CreateLike, GetLikesCount
 from src.repositories.entities.notes import TakeDownNote, CreateNote
@@ -28,8 +29,15 @@ class LikesWriterRepository:
         self.create_like = CreateLike(conn)
 
 
+class CommentWriterRepository:
+    def __init__(self, conn: AsyncConnection) -> None:
+        self.create_comment = CreateComment(conn)
+
+
 AcquireNotesRepository = AcquireRepository[NotesReaderRepository]
 MutatorNotesRepository = AcquireTxRepository[NotesWriterRepository]
 
 AcquireLikesRepository = AcquireRepository[LikesReaderRepository]
 MutatorLikesRepository = AcquireTxRepository[LikesWriterRepository]
+
+MutatorCommentRepository = AcquireTxRepository[CommentWriterRepository]
