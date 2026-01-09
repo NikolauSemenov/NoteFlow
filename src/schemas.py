@@ -7,6 +7,13 @@ class NoteIdRow(BaseModel):
     id: int
 
 
+class CommentsRow(BaseModel):
+    comment_id: int
+    text: str
+    user_name: str
+    user_id: int
+
+
 class NotesRow(BaseModel):
     id: int
     title: str
@@ -15,6 +22,7 @@ class NotesRow(BaseModel):
     full_name: str = Field(validation_alias="user_full_name")
     user_id: int
     likes: int
+    comments: list[CommentsRow] | None
 
 
 class NotesCache(BaseModel):

@@ -4,7 +4,7 @@ from httpx import AsyncClient
 async def test_get_notes(test_client: AsyncClient, create_note):
     response = await test_client.get("/note-flow/api/v1/notes")
     assert response.status_code == 200
-    assert len(response.json()[0]) == 7
+    assert len(response.json()[0]) == 8
 
 
 async def test_get_notes_not_found(test_client: AsyncClient):
@@ -16,7 +16,7 @@ async def test_get_notes_not_found(test_client: AsyncClient):
 async def test_get_note_by_id(test_client: AsyncClient, create_note):
     response = await test_client.get(f"/note-flow/api/v1/note/{create_note}")
     assert response.status_code == 200
-    assert len(response.json()) == 8
+    assert len(response.json()) == 9
 
 
 async def test_get_note_by_id_not_found(test_client: AsyncClient, create_note):
