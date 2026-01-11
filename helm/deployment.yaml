@@ -31,7 +31,7 @@ spec:
             - name: POSTGRES_DSN
               value: postgresql+asyncpg://postgres:postgres@postgresql.db.svc.cluster.local:5432/note-flow
             - name: REDIS_DSN
-              value: redis://redis.dv.svc.cluster.local:6379
+              value: redis://redis.db.svc.cluster.local:6379
 
           readinessProbe:
             httpGet:
