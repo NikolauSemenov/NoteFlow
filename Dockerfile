@@ -13,7 +13,7 @@ COPY pyproject.toml poetry.lock ./
 
 RUN poetry install --no-root
 
-COPY src /app/
+COPY src /app/src/
 COPY alembic.ini /app/
 COPY migrations /app/migrations
 

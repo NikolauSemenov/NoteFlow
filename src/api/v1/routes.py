@@ -30,6 +30,11 @@ from src.services.notes.get_notes import GetAllNotes, GetNote
 router = APIRouter()
 
 
+@router.get("/health", tags=["Kubernetes"])
+async def health():
+    return {"status": "ok"}
+
+
 @router.get("/notes", tags=["Notes"])
 async def get_all_notes(
     service: Annotated[GetAllNotes, Depends(get_notes)],
