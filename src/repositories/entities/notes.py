@@ -1,4 +1,4 @@
-from sqlalchemy import bindparam, update, insert, and_
+from sqlalchemy import bindparam, update, insert, delete, and_
 
 from src.repositories.entities.mixin import QueryMixIn
 from src.repositories.tables import Note
@@ -38,3 +38,14 @@ class CreateNote(QueryMixIn):
             user_id=user_id,
             user_full_name=user_full_name,
         )
+
+
+class DeleteNote(QueryMixIn):
+    QUERY = (
+        delete(Note)
+        .where(and_(Note.c.id == bindparam("note_id"), Note.c.user_id == bindparam("user_id")))
+        .returning(Note.c.id)
+    )
+
+    async def __call__(self, note_id: int, user_id: int) -> NoteIdRow | None:
+        return await self.first_row_result(self.QUERY, NoteIdRow, note_id=note_id, user_id=user_id)

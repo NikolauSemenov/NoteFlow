@@ -217,3 +217,4 @@ __marimo__/
 
 pgdata/
 volumes/
+.DS_Store

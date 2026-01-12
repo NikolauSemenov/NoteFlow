@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, Path, Query, Header
 from pydantic import Field
 from starlette import status
 
-from src.services.comments.mutation import CreateComment
+from src.services.comments.mutation import CreateComment, DeleteComment
 from src.services.likes.aggregation import CreateLike
-from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote
+from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote, DeleteNote
 from src.dependencies import (
     get_notes,
     get_note_by_id,
@@ -14,6 +14,8 @@ from src.dependencies import (
     create_note,
     create_like,
     create_comment,
+    delete_comment,
+    delete_note,
 )
 from src.schemas import (
     NotesRow,
@@ -83,3 +85,21 @@ async def create_note_comment(
     user_id: int = Header(..., alias="X-User-ID"),
 ) -> CommentIdRow | None:
     return await service(body, user_id)
+
+
+@router.delete("/note/comment/{comment_id}", tags=["Comment"], status_code=status.HTTP_200_OK)
+async def delete_note_comment(
+    service: Annotated[DeleteComment, Depends(delete_comment)],
+    comment_id: int = Path(..., ge=1, le=2147483647),
+    user_id: int = Header(..., alias="X-User-ID"),
+) -> CommentIdRow | None:
+    return await service(comment_id, user_id)
+
+
+@router.delete("/note/{note_id}", tags=["Notes"], status_code=status.HTTP_200_OK)
+async def delete_note_data(
+    service: Annotated[DeleteNote, Depends(delete_note)],
+    note_id: int = Path(..., ge=1, le=2147483647),
+    user_id: int = Header(..., alias="X-User-ID"),
+) -> NoteIdRow | None:
+    return await service(note_id, user_id)

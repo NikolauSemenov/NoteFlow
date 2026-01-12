@@ -9,9 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from src.schemas import NoteResultRow
 from src.cache_entities.notes import RedisCacheRepository
-from src.services.comments.mutation import CreateComment
+from src.services.comments.mutation import CreateComment, DeleteComment
 from src.services.likes.aggregation import CreateLike
-from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote
+from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote, DeleteNote
 from src.config.settings import settings
 from src.repositories.repository import (
     AcquireNotesRepository,
@@ -118,3 +118,17 @@ def create_comment(
     comment_repository: Annotated[MutatorCommentRepository, Depends(mutation_comment_repository)],
 ) -> CreateComment:
     return CreateComment(comment_repository)
+
+
+@lru_cache
+def delete_comment(
+    comment_repository: Annotated[MutatorCommentRepository, Depends(mutation_comment_repository)],
+) -> DeleteComment:
+    return DeleteComment(comment_repository)
+
+
+@lru_cache
+def delete_note(
+    notes_repository: Annotated[MutatorNotesRepository, Depends(mutator_notes_repository)],
+) -> DeleteNote:
+    return DeleteNote(notes_repository)

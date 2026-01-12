@@ -51,3 +51,62 @@ async def test_create_note(test_client: AsyncClient):
     )
     assert response.status_code == 201
     assert response.json() == {"id": 1}
+
+
+async def test_delete_note_success(test_client: AsyncClient, create_note):
+    """Test successful deletion of own note"""
+    response = await test_client.delete(
+        f"/note-flow/api/v1/note/{create_note}",
+        headers={"X-User-ID": "1"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"id": create_note}
+
+
+async def test_delete_note_not_found(test_client: AsyncClient):
+    """Test deletion of non-existent note"""
+    response = await test_client.delete(
+        "/note-flow/api/v1/note/999",
+        headers={"X-User-ID": "1"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Note 999 not found or you don't have permission to delete it"}
+
+
+async def test_delete_note_wrong_user(test_client: AsyncClient, create_note):
+    """Test deletion of note by different user (no permission)"""
+    response = await test_client.delete(
+        f"/note-flow/api/v1/note/{create_note}",
+        headers={"X-User-ID": "2"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": f"Note {create_note} not found or you don't have permission to delete it"}
+
+
+async def test_delete_note_invalid_id(test_client: AsyncClient):
+    """Test deletion with invalid note ID"""
+    response = await test_client.delete(
+        "/note-flow/api/v1/note/0",
+        headers={"X-User-ID": "1"},
+    )
+    assert response.status_code == 422
+
+
+async def test_delete_note_cascades_comments(test_client: AsyncClient, create_note, create_comment):
+    """Test that deleting a note also deletes its comments (cascade)"""
+    # First verify comment exists
+    response = await test_client.get(f"/note-flow/api/v1/note/{create_note}")
+    assert response.status_code == 200
+    note_data = response.json()
+    assert len(note_data["comments"]) > 0
+
+    # Delete the note
+    response = await test_client.delete(
+        f"/note-flow/api/v1/note/{create_note}",
+        headers={"X-User-ID": "1"},
+    )
+    assert response.status_code == 200
+
+    # Verify note is deleted
+    response = await test_client.get(f"/note-flow/api/v1/note/{create_note}")
+    assert response.status_code == 404

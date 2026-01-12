@@ -25,3 +25,15 @@ class CreateNote:
             return await notes_repo.create_note(
                 title=note.title, content=note.content, user_full_name=note.full_name, user_id=user_id
             )
+
+
+class DeleteNote:
+    def __init__(self, notes_repo: MutatorNotesRepository):
+        self._notes_repo = notes_repo
+
+    async def __call__(self, note_id: int, user_id: int) -> NoteIdRow | None:
+        async with self._notes_repo() as notes_repo:
+            note = await notes_repo.delete_note(note_id, user_id)
+            if note is None:
+                raise HTTPException(status_code=404, detail=f"Note {note_id} not found or you don't have permission to delete it")
+            return note

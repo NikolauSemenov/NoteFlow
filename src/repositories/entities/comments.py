@@ -1,4 +1,4 @@
-from sqlalchemy import insert, bindparam
+from sqlalchemy import insert, delete, bindparam, and_
 
 from src.schemas import CommentIdRow
 from src.repositories.entities.mixin import QueryMixIn
@@ -21,3 +21,14 @@ class CreateComment(QueryMixIn):
         return await self.first_row_result(
             self.QUERY, CommentIdRow, note_id=note_id, user_id=user_id, user_full_name=user_full_name, text=text
         )
+
+
+class DeleteComment(QueryMixIn):
+    QUERY = (
+        delete(Comment)
+        .where(and_(Comment.c.id == bindparam("comment_id"), Comment.c.user_id == bindparam("user_id")))
+        .returning(Comment.c.id)
+    )
+
+    async def __call__(self, comment_id: int, user_id: int) -> CommentIdRow | None:
+        return await self.first_row_result(self.QUERY, CommentIdRow, comment_id=comment_id, user_id=user_id)
