@@ -51,3 +51,9 @@ migrate_docker:
 downgrade_docker:
 	docker compose -p ${PROJECT} run --rm app \
 		alembic downgrade -1
+
+deploy:
+	@eval $$(minikube docker-env) && \
+		docker build -t note-flow:latest . && \
+		kubectl apply -f k8s && \
+		kubectl rollout restart deployment note-flow -n backend
