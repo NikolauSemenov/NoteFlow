@@ -33,7 +33,7 @@ Like = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("user_id", Integer(), nullable=False),
-    Column("note_id", Integer(), ForeignKey("notes.id"), nullable=False),
+    Column("note_id", Integer(), ForeignKey("notes.id", ondelete="CASCADE"), nullable=False),
     Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
     UniqueConstraint("user_id", "note_id", name="uq_user_note_like"),
 )
@@ -45,6 +45,6 @@ Comment = Table(
     Column("text", String(), nullable=False),
     Column("user_id", Integer(), nullable=False),
     Column("user_full_name", String(), nullable=False),
-    Column("note_id", Integer(), ForeignKey("notes.id"), nullable=False),
+    Column("note_id", Integer(), ForeignKey("notes.id", ondelete="CASCADE"), nullable=False),
     Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
 )
