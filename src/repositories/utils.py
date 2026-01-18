@@ -1,23 +1,24 @@
 import abc
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
-from typing import TypeVar, AsyncIterator, Callable, AsyncContextManager
+from typing import AsyncContextManager, AsyncIterator, Callable, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
 T = TypeVar("T", covariant=True)
 
 _session_cv: ContextVar[dict[AsyncEngine, AsyncConnection]] = ContextVar("_session_cv")
+_tx_session_cv: ContextVar[dict[AsyncEngine, AsyncConnection]] = ContextVar("_tx_session_cv")
 
 
 class SqlAlchemyAcquire[T](abc.ABC):
     """
-    Данная фабрика позволяет переиспользовать AsyncSession в рамках одного клиентского запроса
+    Данная фабрика позволяет переиспользовать AsyncConnection в рамках одного клиентского запроса
 
     async with self._first_repo() as first_repo:
         async with self._second_repo() as second_repo:
             ...
-    В этом случае будет использоваться один экземпляр AsyncSession
+    В этом случае будет использоваться один экземпляр AsyncConnection
     """
 
     SESSION_STORAGE: ContextVar[dict[AsyncEngine, AsyncConnection]]
@@ -51,7 +52,9 @@ class SqlAlchemyAcquire[T](abc.ABC):
 
 
 class AcquireTxRepository(SqlAlchemyAcquire[T]):
-    SESSION_STORAGE = _session_cv
+    """Фабрика для транзакционных репозиториев."""
+
+    SESSION_STORAGE = _tx_session_cv
 
     @asynccontextmanager
     async def _get_connection(self) -> AsyncIterator[AsyncConnection]:
@@ -60,6 +63,8 @@ class AcquireTxRepository(SqlAlchemyAcquire[T]):
 
 
 class AcquireRepository(SqlAlchemyAcquire[T]):
+    """Фабрика для не-транзакционных (read-only) репозиториев."""
+
     SESSION_STORAGE = _session_cv
 
     @asynccontextmanager
