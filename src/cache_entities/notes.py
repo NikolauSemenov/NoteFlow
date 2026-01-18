@@ -9,7 +9,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class RedisCacheRepository(BaseCache[T]):
-    def __init__(self, redis: Redis) -> None:  # type: ignore[type-arg]
+    def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
     async def load(self, key: str, model: type[T]) -> T | None:

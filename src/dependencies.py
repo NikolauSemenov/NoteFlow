@@ -32,12 +32,12 @@ def get_engine(request: Request) -> AsyncEngine:
     return cast(AsyncEngine, request.app.state.resources.engine)
 
 
-def get_redis(request: Request) -> Redis:  # type: ignore[type-arg]
-    return cast(Redis, request.app.state.resources.redis)  # type: ignore[type-arg]
+def get_redis(request: Request) -> Redis:
+    return cast(Redis, request.app.state.resources.redis)
 
 
 def get_redis_cache(
-    redis_client: Annotated[Redis, Depends(get_redis)],  # type: ignore[type-arg]
+    redis_client: Annotated[Redis, Depends(get_redis)],
 ) -> RedisCacheRepository[NoteResultRow]:
     return RedisCacheRepository(redis_client)
 

@@ -1,39 +1,39 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Header
+from fastapi import APIRouter, Depends, Header, Path, Query
 from pydantic import Field
 from starlette import status
 
-from src.services.comments.mutation import CreateComment, DeleteComment
-from src.services.likes.aggregation import CreateLike
-from src.services.notes.mutation_notes import TakeDownActiveNote, CreateNote, DeleteNote
 from src.dependencies import (
-    get_notes,
-    get_note_by_id,
-    update_note_active,
-    create_note,
-    create_like,
     create_comment,
+    create_like,
+    create_note,
     delete_comment,
     delete_note,
+    get_note_by_id,
+    get_notes,
+    update_note_active,
 )
 from src.schemas import (
-    NotesRow,
-    NoteRow,
-    NoteIdRow,
-    CreateNoteBody,
-    CreateLikeBody,
-    LikesCountRow,
-    CreateCommentBody,
     CommentIdRow,
+    CreateCommentBody,
+    CreateLikeBody,
+    CreateNoteBody,
+    LikesCountRow,
+    NoteIdRow,
+    NoteRow,
+    NotesRow,
 )
+from src.services.comments.mutation import CreateComment, DeleteComment
+from src.services.likes.aggregation import CreateLike
 from src.services.notes.get_notes import GetAllNotes, GetNote
+from src.services.notes.mutation_notes import CreateNote, DeleteNote, TakeDownActiveNote
 
 router = APIRouter()
 
 
 @router.get("/health", tags=["Kubernetes"])
-async def health():
+async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 

@@ -49,7 +49,7 @@ class CreateNoteBody(BaseModel):
 
     @field_validator("title", "content", "full_name", mode="before")
     @classmethod
-    def strip_whitespace(cls, v: str) -> str:
+    def strip_whitespace(cls, v: object) -> object:
         if isinstance(v, str):
             return v.strip()
         return v
@@ -78,7 +78,7 @@ class CreateCommentBody(BaseModel):
 
     @field_validator("text", "user_full_name", mode="before")
     @classmethod
-    def strip_whitespace(cls, v: str) -> str:
+    def strip_whitespace(cls, v: object) -> object:
         if isinstance(v, str):
             return v.strip()
         return v
