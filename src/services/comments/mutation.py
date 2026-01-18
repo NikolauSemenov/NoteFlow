@@ -21,4 +21,7 @@ class DeleteComment:
         async with self._comment_repo() as comment_repo:
             if comment := await comment_repo.delete_comment(comment_id, user_id):
                 return comment
-            raise HTTPException(status_code=404, detail=f"Comment {comment_id} not found or you don't have permission to delete it")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Comment {comment_id} not found or you don't have permission to delete it",
+            )

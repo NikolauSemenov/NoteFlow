@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class NoteIdRow(BaseModel):
@@ -19,7 +19,7 @@ class NotesRow(BaseModel):
     title: str
     content: str
     created_at: datetime
-    full_name: str = Field(validation_alias="user_full_name")
+    user_full_name: str
     user_id: int
     likes: int
     comments: list[CommentsRow] | None
@@ -43,9 +43,16 @@ class NoteResultRow(BaseModel):
 
 
 class CreateNoteBody(BaseModel):
-    title: str
-    content: str
-    full_name: str
+    title: str = Field(..., min_length=1, max_length=255)
+    content: str = Field(..., min_length=1, max_length=10000)
+    full_name: str = Field(..., min_length=1, max_length=255)
+
+    @field_validator("title", "content", "full_name", mode="before")
+    @classmethod
+    def strip_whitespace(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
 
 class CreateLikeBody(BaseModel):
@@ -65,6 +72,13 @@ class CommentIdRow(BaseModel):
 
 
 class CreateCommentBody(BaseModel):
-    text: str
-    user_full_name: str
-    note_id: int
+    text: str = Field(..., min_length=1, max_length=2000)
+    user_full_name: str = Field(..., min_length=1, max_length=255)
+    note_id: int = Field(..., gt=0)
+
+    @field_validator("text", "user_full_name", mode="before")
+    @classmethod
+    def strip_whitespace(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip()
+        return v

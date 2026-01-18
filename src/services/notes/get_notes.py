@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from src.cache_entities.notes import RedisCacheRepository
 from src.config.settings import Settings
 from src.repositories.repository import AcquireNotesRepository
-from src.schemas import NotesRow, NoteResultRow, NoteRow
+from src.schemas import NoteResultRow, NoteRow, NotesRow
 
 
 class GetAllNotes:
@@ -15,8 +15,9 @@ class GetAllNotes:
         self._setting = setting
 
     async def __call__(self) -> list[NotesRow]:
-        # if result := await self._cache.load(self._setting.redis_notes_prefix, NotesCache):
-        #     return result.result
+        if cached := await self._cache.load(self._setting.redis_notes_prefix, NoteResultRow):
+            return cached.result
+
         async with self._notes_repo() as notes_repo:
             notes = await notes_repo.get_notes_is_active()
             if not notes:
